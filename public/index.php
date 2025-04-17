@@ -2,7 +2,6 @@
 $serverKey = "SB-Mid-server-srTkZzsKuZbUO-bnPOb1eza6"; // Ganti dengan server key sandbox kamu
 $auth = base64_encode($serverKey . ":");
 
-// Baca JSON dari input
 $rawData = file_get_contents("php://input");
 $input = json_decode($rawData, true);
 
@@ -31,7 +30,7 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 $response = curl_exec($ch);
 curl_close($ch);
 
-// Output JSON dari Midtrans
 echo $response;
 ?>
+
 
