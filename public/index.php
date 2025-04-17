@@ -1,36 +1,31 @@
 <?php
-$serverKey = "SB-Mid-server-srTkZzsKuZbUO-bnPOb1eza6"; // Ganti dengan server key sandbox kamu
-$auth = base64_encode($serverKey . ":");
+    $serverKey = getenv('MIDTRANS_SERVER_KEY'); // dari environment
+    $auth = base64_encode($serverKey . ":");
 
-$rawData = file_get_contents("php://input");
-$input = json_decode($rawData, true);
+    $json = file_get_contents('php://input');
+    $postData = json_decode($json, true);
 
-$amount = isset($input['amount']) ? (int)$input['amount'] : 0;
-$name = isset($input['name']) ? $input['name'] : "User";
+    $data = [
+        'transaction_details' => [
+            'order_id' => uniqid('ORDER-'),
+            'gross_amount' => (int)$postData['amount'],
+        ],
+        'customer_details' => [
+            'first_name' => $postData['name']
+        ]
+    ];
 
-$data = [
-    'transaction_details' => [
-        'order_id' => uniqid('ORDER-'),
-        'gross_amount' => $amount,
-    ],
-    'customer_details' => [
-        'first_name' => $name
-    ]
-];
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://app.sandbox.midtrans.com/snap/v1/transactions");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "Authorization: Basic $auth"
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    $response = curl_exec($ch);
+    curl_close($ch);
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, "https://app.sandbox.midtrans.com/snap/v1/transactions");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "Accept: application/json",
-    "Content-Type: application/json",
-    "Authorization: Basic $auth"
-]);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-$response = curl_exec($ch);
-curl_close($ch);
-
-echo $response;
+    echo $response;
 ?>
-
-
